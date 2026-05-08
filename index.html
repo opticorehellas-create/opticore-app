@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Opticore - Ημερολόγιο Εργασιών</title>
+  <link rel="icon" href="https://drive.google.com/thumbnail?id=1z1_OpVCnLZq0Hsdq51-FhqCKEPZa-ejH&sz=w128">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1a1a2e;
+      background-image: url('https://drive.google.com/thumbnail?id=1HymMFf0jDXETfuYZjXVmtL8uz26OrGzh&sz=w1200');
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      padding: 12px;
+      min-height: 100vh;
+      font-size: 16px;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(10, 10, 30, 0.70);
+      z-index: 0;
+    }
+    .content { position: relative; z-index: 1; max-width: 600px; margin: 0 auto; }
+
+    /* HEADER */
+    .header { text-align: center; padding: 16px 0 12px; margin-bottom: 12px; }
+    .header-title {
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    }
+
+    /* CARDS */
+    .card { background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+    .card-green { background: #f0faf4 !important; border: 3px solid #34a853 !important; }
+    .card-orange { background: #fff8f0 !important; border: 3px solid #f57c00 !important; }
+    .card-dark { background: rgba(255,255,255,0.13); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.25); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+
+    /* HEADERS */
+    h3 { font-size: 18px; font-weight: bold; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 3px solid rgba(0,0,0,0.08); }
+    .h3-green { color: #2e7d32 !important; border-bottom-color: #34a853 !important; }
+    .h3-orange { color: #e65100 !important; border-bottom-color: #f57c00 !important; }
+    .h3-blue { color: #1557b0 !important; border-bottom-color: #1a73e8 !important; }
+    .h3-purple { color: #6a1b9a !important; border-bottom-color: #9c27b0 !important; }
+
+    /* LABELS */
+    label { display: block; font-size: 15px; font-weight: bold; color: rgba(255,255,255,0.9); margin-bottom: 6px; margin-top: 14px; }
+    .card label { color: #444; }
+
+    /* INPUTS */
+    select, textarea, input[type="text"] {
+      width: 100%;
+      padding: 14px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+      background: white;
+      -webkit-appearance: none;
+    }
+    select:focus, textarea:focus, input:focus { border-color: #1a73e8; outline: none; }
+    textarea { height: 110px; resize: none; }
+
+    /* BUTTONS */
+    .btn {
+      width: 100%;
+      padding: 18px;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 12px;
+      letter-spacing: 0.5px;
+      transition: opacity 0.15s;
+    }
+    .btn:active { opacity: 0.8; transform: scale(0.98); }
+    .btn-record { background: #ea4335; color: white; }
+    .btn-record.recording { background: #b31412; animation: pulse 1s infinite; }
+    .btn-photo { background: #1557b0; color: white; }
+    .btn-exfo { background: #6a1b9a; color: white; }
+    .btn-save-notes { background: #2e7d32; color: white; }
+    .btn-save-pending { background: #e65100; color: white; }
+    .btn-save-photo { background: #1557b0; color: white; }
+    .btn-save-exfo { background: #6a1b9a; color: white; }
+    .btn:disabled { background: #bbb !important; color: #fff !important; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+    /* STATUS */
+    .status { text-align: center; font-size: 15px; color: #555; margin-top: 8px; font-weight: bold; }
+
+    /* SUCCESS */
+    .success { padding: 14px; border-radius: 10px; text-align: center; margin-top: 12px; display: none; font-size: 16px; font-weight: bold; }
+    .success-green { background: #c8e6c9; color: #1b5e20; }
+    .success-orange { background: #ffe0b2; color: #bf360c; }
+    .success-blue { background: #bbdefb; color: #0d47a1; }
+    .success-purple { background: #e1bee7; color: #4a148c; }
+
+    /* FOLDER GRID */
+    .folder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .folder-btn {
+      padding: 16px 8px;
+      border: 3px solid #ddd;
+      border-radius: 12px;
+      background: white;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      color: #333;
+      line-height: 1.4;
+    }
+    .folder-btn:active { transform: scale(0.96); }
+    .folder-btn.selected { border-color: #1557b0; background: #1557b0; color: white; }
+    .folder-label { font-size: 13px; color: #1557b0; font-weight: bold; margin-top: 10px; }
+
+    /* PHOTO ITEMS */
+    .photo-item { margin-top: 12px; padding: 14px; background: #f5f5f5; border-radius: 12px; border: 2px solid #e0e0e0; }
+    .photo-item-top { display: flex; gap: 12px; margin-bottom: 10px; align-items: flex-start; }
+    .photo-item-top img { width: 80px; height: 80px; object-fit: cover; border-radius: 10px; flex-shrink: 0; }
+    .photo-item-top-fields { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .photo-item-top-fields input { padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 15px; width: 100%; }
+    .photo-item-bottom { display: flex; flex-direction: column; gap: 8px; }
+    .photo-item-bottom textarea { padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 15px; height: 70px; resize: none; width: 100%; }
+    .photo-num { font-size: 12px; color: #777; font-weight: bold; }
+
+    /* PHOTO FOLDER GRID (per photo) */
+    .photo-folder-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
+    .photo-folder-btn { padding: 10px 4px; border: 2px solid #ddd; border-radius: 8px; background: white; font-size: 11px; font-weight: bold; cursor: pointer; text-align: center; color: #444; }
+    .photo-folder-btn.selected { border-color: #1557b0; background: #1557b0; color: white; }
+    .photo-folder-label { font-size: 12px; color: #1557b0; font-weight: bold; margin-bottom: 4px; }
+
+    /* FILE ITEM */
+    .file-item { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 14px; background: #f3e5f5; border-radius: 12px; border: 2px solid #ce93d8; }
+    .file-icon { font-size: 36px; flex-shrink: 0; }
+    .file-name { font-size: 15px; font-weight: bold; color: #333; word-break: break-all; }
+    .file-size { font-size: 13px; color: #888; margin-top: 4px; }
+
+    /* PROGRESS */
+    .progress { background: #e0e0e0; border-radius: 10px; height: 10px; margin-top: 14px; display: none; overflow: hidden; }
+    .progress-bar { height: 10px; border-radius: 10px; width: 0%; transition: width 0.3s; }
+    .progress-bar-blue { background: #1557b0; }
+    .progress-bar-purple { background: #6a1b9a; }
+    .progress-text { text-align: center; font-size: 14px; color: #555; margin-top: 6px; font-weight: bold; }
+
+    .loading { text-align: center; color: rgba(255,255,255,0.8); padding: 10px; font-size: 16px; }
+    .footer { text-align: center; color: rgba(255,255,255,0.35); font-size: 11px; padding: 10px 0 20px; letter-spacing: 2px; }
+    .exfo-info { font-size: 13px; color: #6a1b9a; margin-bottom: 10px; font-weight: bold; }
+  </style>
+</head>
+<body>
+<div class="content">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-title">📋 Ημερολόγιο Εργασιών</div>
+</div>
+
+<!-- ΕΠΙΛΟΓΗ ΜΗΝΑ & PROJECT -->
+<div class="card-dark">
+  <div id="loadingMsg" class="loading">⏳ Φόρτωση...</div>
+  <label>📅 Μήνας</label>
+  <select id="monthSelect" onchange="loadProjects()">
+    <option value="">-- Επίλεξε μήνα --</option>
+  </select>
+  <label>🏗️ Project</label>
+  <select id="projectSelect">
+    <option value="">-- Επίλεξε project --</option>
+  </select>
+</div>
+
+<!-- ΕΡΓΑΣΙΕΣ -->
+<div class="card card-green">
+  <h3 class="h3-green">📝 Εργασίες Ημέρας</h3>
+  <label>Τι έγινε σήμερα;</label>
+  <textarea id="notes" placeholder="Γράψε ή χρησιμοποίησε το μικρόφωνο του πληκτρολογίου..."></textarea>
+  <button class="btn btn-record" id="recordBtn" onclick="toggleRecord()">🎤 Ηχογράφηση</button>
+  <div class="status" id="recordStatus"></div>
+  <button class="btn btn-save-notes" id="saveBtnNotes" onclick="saveNotes()">💾 Αποθήκευση Εργασιών</button>
+  <div class="success success-green" id="successNotes">✅ Αποθηκεύτηκε!</div>
+</div>
+
+<!-- ΕΚΚΡΕΜΟΤΗΤΕΣ -->
+<div class="card card-orange">
+  <h3 class="h3-orange">⚠️ Εκκρεμότητες</h3>
+  <label>Τι εκκρεμεί;</label>
+  <textarea id="pending" placeholder="πχ. Εκκρεμεί άδεια δήμου, αναμονή υλικών..."></textarea>
+  <button class="btn btn-save-pending" id="saveBtnPending" onclick="savePending()">💾 Αποθήκευση Εκκρεμοτήτων</button>
+  <div class="success success-orange" id="successPending">✅ Αποθηκεύτηκε!</div>
+</div>
+
+<!-- ΦΩΤΟΓΡΑΦΙΕΣ -->
+<div class="card">
+  <h3 class="h3-blue">📷 Φωτογραφίες</h3>
+  <button class="btn btn-photo" onclick="document.getElementById('photoInput').click()">📷 Επιλογή Φωτογραφιών</button>
+  <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="previewPhotos(this)">
+  <div id="photosList"></div>
+  <div class="progress" id="progressPhotos">
+    <div class="progress-bar progress-bar-blue" id="progressBarPhotos"></div>
+  </div>
+  <div class="progress-text" id="progressTextPhotos"></div>
+  <button class="btn btn-save-photo" id="saveBtnPhoto" onclick="savePhotos()" style="display:none">☁️ Ανέβασμα στο Drive</button>
+  <div class="success success-blue" id="successPhoto"></div>
+</div>
+
+<!-- EXFO -->
+<div class="card">
+  <h3 class="h3-purple">📊 Μετρήσεις EXFO</h3>
+  <div class="exfo-info">📁 Αποθηκεύεται στον φάκελο ΜΕΤΡΗΣΕΙΣ</div>
+  <label>Σχόλιο (προαιρετικό)</label>
+  <input type="text" id="exfoComment" placeholder="πχ. OTDR μετρήσεις SR26766...">
+  <button class="btn btn-exfo" onclick="document.getElementById('exfoInput').click()">📂 Επιλογή Αρχείου</button>
+  <input type="file" id="exfoInput" style="display:none" onchange="previewExfo(this)">
+  <div id="exfoPreview"></div>
+  <div class="progress" id="progressExfo">
+    <div class="progress-bar progress-bar-purple" id="progressBarExfo"></div>
+  </div>
+  <div class="progress-text" id="progressTextExfo"></div>
+  <button class="btn btn-save-exfo" id="saveBtnExfo" onclick="saveExfo()" style="display:none">☁️ Ανέβασμα στο Drive</button>
+  <div class="success success-purple" id="successExfo"></div>
+</div>
+
+<div class="footer">OPTICORE® · PRECISION IN TELECOM SERVICES</div>
+
+</div>
+<script>
+  var recognition = null;
+  var isRecording = false;
+  var selectedPhotos = [];
+  var exfoFile = null;
+
+  var FOLDERS = ['ΚΑΤΑΣΚΕΥΗ', 'ΕΠΕΜΒΑΣΕΙΣ ΟΣ', 'ΕΓΚΑΤΑΣΤΑΣΗ', 'ΕΜΦΥΣΗΣΕΙΣ', 'ΧΩΜΑΤΟΥΡΓΙΚΑ'];
+  var FOLDER_ICONS = ['🏗️', '🔧', '📡', '💨', '🚜'];
+
+  google.script.run
+    .withSuccessHandler(function(months) {
+      document.getElementById('loadingMsg').style.display = 'none';
+      var sel = document.getElementById('monthSelect');
+      if (months && months.length > 0) {
+        months.forEach(function(m) {
+          var opt = document.createElement('option');
+          opt.value = m; opt.text = m;
+          sel.appendChild(opt);
+        });
+      } else {
+        document.getElementById('loadingMsg').textContent = 'Δεν βρέθηκαν μήνες!';
+        document.getElementById('loadingMsg').style.display = 'block';
+      }
+    })
+    .withFailureHandler(function(err) {
+      document.getElementById('loadingMsg').textContent = 'Σφάλμα: ' + err.message;
+    })
+    .getMonths();
+
+  function loadProjects() {
+    var month = document.getElementById('monthSelect').value;
+    var sel = document.getElementById('projectSelect');
+    sel.innerHTML = '<option value="">-- Επίλεξε project --</option>';
+    if (!month) return;
+    google.script.run
+      .withSuccessHandler(function(projects) {
+        if (projects && projects.length > 0) {
+          projects.forEach(function(p) {
+            var opt = document.createElement('option');
+            opt.value = JSON.stringify(p); opt.text = p.name;
+            sel.appendChild(opt);
+          });
+        }
+      })
+      .withFailureHandler(function(err) { alert('Σφάλμα: ' + err.message); })
+      .getProjects(month);
+  }
+
+  function getMonthProject() {
+    var month = document.getElementById('monthSelect').value;
+    var projectRaw = document.getElementById('projectSelect').value;
+    if (!month || !projectRaw) { alert('Επίλεξε μήνα και project!'); return null; }
+    return { month: month, project: JSON.parse(projectRaw) };
+  }
+
+  function toggleRecord() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      alert('Χρησιμοποίησε το μικρόφωνο του πληκτρολογίου σου.'); return;
+    }
+    if (isRecording) { recognition.stop(); return; }
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SR();
+    recognition.lang = 'el-GR';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.onstart = function() {
+      isRecording = true;
+      document.getElementById('recordBtn').classList.add('recording');
+      document.getElementById('recordBtn').textContent = '⏹ Σταμάτα Ηχογράφηση';
+      document.getElementById('recordStatus').textContent = '🔴 Ηχογραφώ...';
+    };
+    recognition.onresult = function(event) {
+      var text = '';
+      for (var i = 0; i < event.results.length; i++) text += event.results[i][0].transcript;
+      document.getElementById('notes').value = text;
+    };
+    recognition.onend = function() {
+      isRecording = false;
+      document.getElementById('recordBtn').classList.remove('recording');
+      document.getElementById('recordBtn').textContent = '🎤 Ηχογράφηση';
+      document.getElementById('recordStatus').textContent = '✅ Ολοκληρώθηκε';
+    };
+    recognition.start();
+  }
+
+  function previewPhotos(input) {
+    var files = Array.from(input.files);
+    if (!files.length) return;
+    selectedPhotos = [];
+    document.getElementById('photosList').innerHTML = '';
+    document.getElementById('saveBtnPhoto').style.display = 'none';
+    var processed = 0;
+
+    files.forEach(function(file, index) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var img = new Image();
+        img.onload = function() {
+          var canvas = document.createElement('canvas');
+          var maxSize = 800;
+          var w = img.width, h = img.height;
+          if (w > h) { if (w > maxSize) { h = Math.round(h * maxSize / w); w = maxSize; } }
+          else { if (h > maxSize) { w = Math.round(w * maxSize / h); h = maxSize; } }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          var compressed = canvas.toDataURL('image/jpeg', 0.7);
+          selectedPhotos[index] = { base64: compressed.split(',')[1], mime: 'image/jpeg', originalName: file.name, subFolder: 'ΚΑΤΑΣΚΕΥΗ' };
+
+          var list = document.getElementById('photosList');
+          var item = document.createElement('div');
+          item.className = 'photo-item';
+
+          // Top: image + name
+          var top = document.createElement('div');
+          top.className = 'photo-item-top';
+          var imgEl = document.createElement('img');
+          imgEl.src = compressed;
+          var topFields = document.createElement('div');
+          topFields.className = 'photo-item-top-fields';
+          var num = document.createElement('div');
+          num.className = 'photo-num';
+          num.textContent = 'ΦΩΤΟΓΡΑΦΙΑ ' + (index + 1);
+          var nameInput = document.createElement('input');
+          nameInput.type = 'text';
+          nameInput.id = 'photoname_' + index;
+          nameInput.placeholder = 'Όνομα φωτογραφίας...';
+          topFields.appendChild(num);
+          topFields.appendChild(nameInput);
+          top.appendChild(imgEl);
+          top.appendChild(topFields);
+
+          // Bottom: comment + folder
+          var bottom = document.createElement('div');
+          bottom.className = 'photo-item-bottom';
+
+          var commentInput = document.createElement('textarea');
+          commentInput.id = 'photocomment_' + index;
+          commentInput.placeholder = 'Σχόλιο...';
+
+          // Folder buttons
+          var folderLbl = document.createElement('div');
+          folderLbl.className = 'photo-folder-label';
+          folderLbl.textContent = '📁 Φάκελος:';
+
+          var folderGrid = document.createElement('div');
+          folderGrid.className = 'photo-folder-grid';
+
+          FOLDERS.forEach(function(f, fi) {
+            var fbtn = document.createElement('button');
+            fbtn.className = 'photo-folder-btn' + (fi === 0 ? ' selected' : '');
+            fbtn.textContent = FOLDER_ICONS[fi] + ' ' + f;
+            fbtn.dataset.folder = f;
+            fbtn.dataset.index = index;
+            fbtn.onclick = function() {
+              // Deselect all in this photo
+              folderGrid.querySelectorAll('.photo-folder-btn').forEach(function(b) { b.classList.remove('selected'); });
+              fbtn.classList.add('selected');
+              selectedPhotos[index].subFolder = f;
+            };
+            folderGrid.appendChild(fbtn);
+          });
+
+          bottom.appendChild(commentInput);
+          bottom.appendChild(folderLbl);
+          bottom.appendChild(folderGrid);
+
+          item.appendChild(top);
+          item.appendChild(bottom);
+          list.appendChild(item);
+
+          processed++;
+          if (processed === files.length) document.getElementById('saveBtnPhoto').style.display = 'block';
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function previewExfo(input) {
+    var file = input.files[0];
+    if (!file) return;
+    exfoFile = file;
+    var icons = { 'application/pdf': '📄', 'application/zip': '🗜️', 'application/x-zip-compressed': '🗜️' };
+    var icon = icons[file.type] || '📊';
+    var size = (file.size / 1024).toFixed(1) + ' KB';
+    document.getElementById('exfoPreview').innerHTML =
+      '<div class="file-item"><div class="file-icon">' + icon + '</div>' +
+      '<div><div class="file-name">' + file.name + '</div>' +
+      '<div class="file-size">' + size + '</div></div></div>';
+    document.getElementById('saveBtnExfo').style.display = 'block';
+  }
+
+  function saveNotes() {
+    var mp = getMonthProject(); if (!mp) return;
+    var notes = document.getElementById('notes').value.trim();
+    if (!notes) { alert('Γράψε τις εργασίες!'); return; }
+    var btn = document.getElementById('saveBtnNotes');
+    btn.disabled = true; btn.textContent = '⏳ Αποθήκευση...';
+    google.script.run
+      .withSuccessHandler(function() {
+        document.getElementById('successNotes').style.display = 'block';
+        document.getElementById('notes').value = '';
+        btn.disabled = false; btn.textContent = '💾 Αποθήκευση Εργασιών';
+        setTimeout(function() { document.getElementById('successNotes').style.display = 'none'; }, 3000);
+      })
+      .withFailureHandler(function(e) { alert('Σφάλμα: ' + e.message); btn.disabled = false; btn.textContent = '💾 Αποθήκευση Εργασιών'; })
+      .saveEntry({ type: 'notes', month: mp.month, category: mp.project.category, project: mp.project.name, notes: notes, photoData: null, photoMime: null, photoName: null, subFolder: null });
+  }
+
+  function savePending() {
+    var mp = getMonthProject(); if (!mp) return;
+    var pending = document.getElementById('pending').value.trim();
+    if (!pending) { alert('Γράψε τις εκκρεμότητες!'); return; }
+    var btn = document.getElementById('saveBtnPending');
+    btn.disabled = true; btn.textContent = '⏳ Αποθήκευση...';
+    google.script.run
+      .withSuccessHandler(function() {
+        document.getElementById('successPending').style.display = 'block';
+        document.getElementById('pending').value = '';
+        btn.disabled = false; btn.textContent = '💾 Αποθήκευση Εκκρεμοτήτων';
+        setTimeout(function() { document.getElementById('successPending').style.display = 'none'; }, 3000);
+      })
+      .withFailureHandler(function(e) { alert('Σφάλμα: ' + e.message); btn.disabled = false; btn.textContent = '💾 Αποθήκευση Εκκρεμοτήτων'; })
+      .saveEntry({ type: 'pending', month: mp.month, category: mp.project.category, project: mp.project.name, notes: pending, photoData: null, photoMime: null, photoName: null, subFolder: null });
+  }
+
+  async function savePhotos() {
+    var mp = getMonthProject(); if (!mp) return;
+    if (!selectedPhotos.length) { alert('Επίλεξε φωτογραφίες!'); return; }
+
+    var date = new Date().toLocaleDateString('el-GR').replace(/\//g, '-');
+    selectedPhotos.forEach(function(photo, index) {
+      var label = document.getElementById('photoname_' + index).value.trim();
+      var comment = document.getElementById('photocomment_' + index).value.trim();
+      photo.name = label ? label + '_' + date + '.jpg' : date + '_' + photo.originalName;
+      photo.comment = comment;
+    });
+
+    var btn = document.getElementById('saveBtnPhoto');
+    btn.disabled = true;
+    var prog = document.getElementById('progressPhotos');
+    var bar = document.getElementById('progressBarPhotos');
+    var txt = document.getElementById('progressTextPhotos');
+    prog.style.display = 'block'; bar.style.width = '0%';
+
+    var uploaded = 0;
+    for (var i = 0; i < selectedPhotos.length; i++) {
+      var photo = selectedPhotos[i];
+      txt.textContent = 'Ανέβασμα ' + (uploaded + 1) + ' από ' + selectedPhotos.length + ' → ' + photo.subFolder + '...';
+      await new Promise(function(resolve, reject) {
+        var p = photo;
+        google.script.run
+          .withSuccessHandler(function() { uploaded++; bar.style.width = Math.round((uploaded / selectedPhotos.length) * 100) + '%'; resolve(); })
+          .withFailureHandler(reject)
+          .saveEntry({ type: 'photo', month: mp.month, category: mp.project.category, project: mp.project.name, notes: p.comment || '', photoData: p.base64, photoMime: p.mime, photoName: p.name, subFolder: p.subFolder });
+      });
+    }
+
+    prog.style.display = 'none';
+    var s = document.getElementById('successPhoto');
+    s.textContent = '✅ ' + uploaded + ' φωτογραφίες αποθηκεύτηκαν!';
+    s.style.display = 'block';
+    document.getElementById('photosList').innerHTML = '';
+    selectedPhotos = [];
+    btn.disabled = false; btn.style.display = 'none';
+    setTimeout(function() { s.style.display = 'none'; }, 4000);
+  }
+
+  function saveExfo() {
+    var mp = getMonthProject(); if (!mp) return;
+    if (!exfoFile) { alert('Επίλεξε αρχείο!'); return; }
+    var comment = document.getElementById('exfoComment').value.trim();
+    var btn = document.getElementById('saveBtnExfo');
+    btn.disabled = true; btn.textContent = '⏳ Ανέβασμα...';
+    var prog = document.getElementById('progressExfo');
+    var bar = document.getElementById('progressBarExfo');
+    var txt = document.getElementById('progressTextExfo');
+    prog.style.display = 'block'; txt.textContent = 'Ανέβασμα αρχείου...';
+    var pct = 0;
+    var interval = setInterval(function() { pct = Math.min(pct + 5, 90); bar.style.width = pct + '%'; }, 200);
+    var capturedFile = exfoFile;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var base64 = e.target.result.split(',')[1];
+      google.script.run
+        .withSuccessHandler(function() {
+          clearInterval(interval); bar.style.width = '100%'; prog.style.display = 'none';
+          var s = document.getElementById('successExfo');
+          s.textContent = '✅ Αρχείο → ΜΕΤΡΗΣΕΙΣ!';
+          s.style.display = 'block';
+          document.getElementById('exfoPreview').innerHTML = '';
+          document.getElementById('exfoComment').value = '';
+          exfoFile = null;
+          btn.disabled = false; btn.style.display = 'none'; btn.textContent = '☁️ Ανέβασμα Αρχείου στο Drive';
+          setTimeout(function() { s.style.display = 'none'; }, 4000);
+        })
+        .withFailureHandler(function(err) {
+          clearInterval(interval); prog.style.display = 'none';
+          alert('Σφάλμα: ' + err.message);
+          btn.disabled = false; btn.textContent = '☁️ Ανέβασμα Αρχείου στο Drive';
+        })
+        .saveEntry({ type: 'exfo', month: mp.month, category: mp.project.category, project: mp.project.name, notes: comment, photoData: base64, photoMime: capturedFile.type || 'application/octet-stream', photoName: capturedFile.name, subFolder: 'ΜΕΤΡΗΣΕΙΣ' });
+    };
+    reader.readAsDataURL(capturedFile);
+  }
+</script>
+</body>
+</html>
