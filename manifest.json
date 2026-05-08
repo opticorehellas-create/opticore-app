@@ -1,0 +1,22 @@
+{
+  "name": "Opticore - Ημερολόγιο Εργασιών",
+  "short_name": "Opticore",
+  "description": "Ημερολόγιο εργασιών τεχνικών Opticore",
+  "start_url": "/opticore-app/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://drive.google.com/thumbnail?id=1z1_OpVCnLZq0Hsdq51-FhqCKEPZa-ejH&sz=w192",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://drive.google.com/thumbnail?id=1z1_OpVCnLZq0Hsdq51-FhqCKEPZa-ejH&sz=w512",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
